@@ -1,1 +1,5 @@
-# Dependencias del backend
+fastapi
+uvicorn
+mysqlclient
+SQLAlchemy
+pydantic# Dependencias del backend
