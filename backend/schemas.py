@@ -14,3 +14,19 @@ class Paciente(PacienteBase):
 
     class Config:
         from_attributes = True
+
+class TurnoBase(BaseModel):
+    paciente_id: int
+    servicio: str
+    nomenclatura: str
+    numero_turno: int
+
+class TurnoCreate(TurnoBase):
+    pass
+
+class Turno(TurnoBase):
+    id: int
+    estado: str
+
+    class Config:
+        from_attributes = True

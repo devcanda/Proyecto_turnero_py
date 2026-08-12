@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Boolean, Enum, ForeignKey
 from database import Base
 
 class Paciente(Base):
@@ -19,3 +19,13 @@ class Servicio(Base):
     categoria = Column(String(50), nullable=True)
     visible = Column(Enum('SI', 'NO'), default='NO')
     categoria_id = Column(Integer, nullable=True)
+
+class Turno(Base):
+    __tablename__ = "turnos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    paciente_id = Column(Integer, ForeignKey("pacientes.id"), nullable=False)
+    servicio = Column(String(50), nullable=False)
+    nomenclatura = Column(String(20), nullable=False)
+    numero_turno = Column(Integer, nullable=False)
+    estado = Column(String(32), default='EN_ESPERA')
