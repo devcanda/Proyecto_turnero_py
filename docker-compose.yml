@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: turnero_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: turnero_db
+      MYSQL_USER: turnero_user
+      MYSQL_PASSWORD: turnero_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - turnero_net
+
+  backend:
+    build: ./backend
+    container_name: turnero_backend
+    restart: always
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8100:8000"
+    depends_on:
+      - db
+    networks:
+      - turnero_net
+
+  frontend:
+    image: nginx:alpine
+    container_name: turnero_frontend
+    restart: always
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    networks:
+      - turnero_net
+
+volumes:
+  db_data:
+
+networks:
+  turnero_net:
