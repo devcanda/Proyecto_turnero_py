@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-mysqlclient
+pymysql
 SQLAlchemy
-pydantic# Dependencias del backend
+pydantic
