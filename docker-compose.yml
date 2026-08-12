@@ -6,10 +6,10 @@ services:
     container_name: turnero_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 1ng3n13r@s&st3m@s
+      MYSQL_ROOT_PASSWORD: "1ng3n13r@s&st3m@s"
       MYSQL_DATABASE: turnero_db
       MYSQL_USER: turnero_user
-      MYSQL_PASSWORD: 1ng3n13r@s&st3m@s
+      MYSQL_PASSWORD: "1ng3n13r@s&st3m@s"
     volumes:
       - db_data:/var/lib/mysql
     networks:
