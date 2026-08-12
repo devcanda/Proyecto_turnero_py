@@ -1,19 +1,18 @@
 from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from database import engine, get_db
+from database import engine, get_db, init_db
 import models, schemas
 from socket_manager import manager
 
-models.Base.metadata.create_all(bind=engine)
+# Usamos nuestra nueva función a prueba de fallos
+init_db()
 
 app = FastAPI(title="API Turnero Digital", version="1.0.0")
 
-# --- CONFIGURACIÓN CORS ---
-# Esto permite que el puerto 8090 (Frontend) hable con el puerto 8100 (Backend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # En producción aquí iría solo la IP de tu servidor
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
