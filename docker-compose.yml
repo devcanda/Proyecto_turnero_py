@@ -17,7 +17,7 @@ services:
 
   backend:
     build: ./backend
-    image: turnero_backend_img:v26
+    image: turnero_backend_img:v28
     container_name: turnero_backend
     restart: always
     ports:
@@ -29,7 +29,7 @@ services:
 
   frontend:
     build: ./frontend
-    image: turnero_frontend_img:v27
+    image: turnero_frontend_img:v28
     container_name: turnero_frontend
     restart: always
     ports:

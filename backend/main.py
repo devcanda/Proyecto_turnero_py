@@ -10,14 +10,13 @@ init_db()
 
 app = FastAPI(title="API Turnero Digital", version="1.0.0")
 
-# Hook de actualización automática de Base de Datos
 @app.on_event("startup")
 def upgrade_db():
     try:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE pacientes ADD COLUMN tipo_doc VARCHAR(10) DEFAULT 'CC'"))
     except Exception:
-        pass # Se ignora silenciosamente si la columna ya existe
+        pass
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,6 +55,11 @@ async def crear_turno(turno: schemas.TurnoCreate, db: Session = Depends(get_db))
 @app.get("/turnos/pendientes", response_model=list[schemas.Turno], tags=["Turnos"])
 def obtener_turnos_pendientes(db: Session = Depends(get_db)):
     return db.query(models.Turno).filter(models.Turno.estado == 'EN_ESPERA').all()
+
+# NUEVO ENDPOINT: Historial de los últimos llamados para encendido de pantallas
+@app.get("/turnos/llamados", response_model=list[schemas.Turno], tags=["Turnos"])
+def obtener_turnos_llamados(db: Session = Depends(get_db)):
+    return db.query(models.Turno).filter(models.Turno.estado == 'LLAMADO').order_by(models.Turno.id.desc()).limit(5).all()
 
 @app.put("/turnos/{turno_id}/llamar", response_model=schemas.Turno, tags=["Turnos"])
 async def llamar_turno(turno_id: int, db: Session = Depends(get_db)):

@@ -19,7 +19,7 @@
         
         /* ZONA DE VIDEO */
         .video-section { width: 65%; background-color: #000; position: relative; }
-        .video-section video { width: 100%; height: 100%; object-fit: cover; }
+        .youtube-iframe { width: 100%; height: 100%; pointer-events: none; /* Evita que el usuario pause el video al tocar la pantalla */ }
         
         /* ZONA DE TURNOS */
         .turnos-section { width: 35%; background-color: #0b3470; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #8bc34a; }
@@ -50,36 +50,44 @@
     </div>
 
     <div class="main-content">
-        <!-- ZONA DE VIDEO INSTITUCIONAL -->
+        <!-- ZONA DE VIDEO DE YOUTUBE -->
         <div class="video-section">
-            <video src="video.mp4" autoplay loop muted></video>
+            <!-- Parámetros: mute=1 (obligatorio para autoplay), autoplay=1, controls=0, loop=1 y playlist igual al ID del video para que repita -->
+            <iframe class="youtube-iframe" 
+                src="https://www.youtube.com/embed/qZcLuGXM6H4?autoplay=1&mute=1&controls=0&loop=1&playlist=qZcLuGXM6H4&modestbranding=1&showinfo=0" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media" 
+                allowfullscreen>
+            </iframe>
         </div>
 
-        <!-- ZONA DE LISTADO DE TURNOS -->
         <div class="turnos-section">
             <div class="tabla-header">
                 <span>TURNO</span>
                 <span>MÓDULO</span>
             </div>
             <div class="lista-turnos" id="contenedor-turnos">
-                <!-- Los turnos se inyectarán aquí vía WebSocket -->
+                <!-- Los turnos se inyectarán aquí vía WebSocket y API -->
             </div>
         </div>
     </div>
 
     <div class="footer">
         <div class="marquee">
-            ::: BIENVENIDO AL CANAL DIGITAL DE ATENCIÓN ::: POR FAVOR ESTÉ ATENTO A SU LLAMADO EN PANTALLA ::: RECUERDE ACTUALIZAR SUS DATOS EN RECEPCIÓN :::
+            ::: BIENVENIDO AL CANAL DIGITAL DE ATENCIÓN ::: POR FAVOR ESTÉ ATENTO A SU LLAMADO EN PANTALLA :::
         </div>
     </div>
 
     <script>
+        const serverIP = window.location.hostname;
+        const MAX_TURNOS = 5;
+        let turnosMostrados = [];
+
         // --- RELOJ Y FECHA ---
         function actualizarReloj() {
             const ahora = new Date();
             let horas = ahora.getHours();
             let minutos = ahora.getMinutes();
-            const ampm = horas >= 12 ? 'PM' : 'AM';
             horas = horas % 12;
             horas = horas ? horas : 12; 
             minutos = minutos < 10 ? '0' + minutos : minutos;
@@ -92,66 +100,97 @@
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
 
-        // --- LÓGICA DE TURNOS Y WEBSOCKET ---
-        const serverIP = window.location.hostname;
-        const ws = new WebSocket(`ws://${serverIP}:8100/ws/pantalla`);
-        const MAX_TURNOS = 5;
-        let turnosMostrados = [];
-
-        ws.onmessage = function(event) {
-            const mensaje = JSON.parse(event.data);
-            
-            if (mensaje.accion === "NUEVO_TURNO") {
-                const turnoStr = `${mensaje.datos.nomenclatura}${mensaje.datos.numero}`;
-                // TODO: El backend aún no envía el módulo, usamos un placeholder temporal
-                const moduloStr = "CAJA 1"; 
-                
-                agregarTurnoAPantalla(turnoStr, moduloStr);
-                llamarPorVoz(turnoStr, moduloStr);
+        // --- CARGA INICIAL DE HISTORIAL ---
+        async function cargarHistorial() {
+            try {
+                const response = await fetch(`http://${serverIP}:8100/turnos/llamados`);
+                if(response.ok) {
+                    const turnos = await response.json();
+                    // Vienen en orden descendente. Los invertimos para que el más nuevo quede arriba al insertarlos.
+                    turnos.reverse().forEach(turno => {
+                        const turnoStr = `${turno.nomenclatura}${turno.numero_turno}`;
+                        // Pasamos "false" para que no suene la voz ni titile al cargar el historial
+                        agregarTurnoAPantalla(turnoStr, "CAJA 1", false);
+                    });
+                }
+            } catch (error) {
+                console.error("Error cargando historial de turnos:", error);
             }
-        };
+        }
 
-        function agregarTurnoAPantalla(turno, modulo) {
+        // --- LÓGICA DE TURNOS Y WEBSOCKET CON AUTO-RECONEXIÓN ---
+        function conectarWebSocket() {
+            const ws = new WebSocket(`ws://${serverIP}:8100/ws/pantalla`);
+            
+            ws.onmessage = function(event) {
+                const mensaje = JSON.parse(event.data);
+                if (mensaje.accion === "NUEVO_TURNO") {
+                    const turnoStr = `${mensaje.datos.nomenclatura}${mensaje.datos.numero}`;
+                    agregarTurnoAPantalla(turnoStr, "CAJA 1", true);
+                }
+            };
+
+            ws.onclose = function(e) {
+                console.log('WebSocket desconectado. Intentando reconectar en 3 segundos...');
+                setTimeout(conectarWebSocket, 3000);
+            };
+
+            ws.onerror = function(err) {
+                console.error('Error de WebSocket:', err);
+                ws.close();
+            };
+        }
+
+        function agregarTurnoAPantalla(turno, modulo, esNuevo) {
             const contenedor = document.getElementById('contenedor-turnos');
             
-            // Quitar clase 'nuevo' a los anteriores
             const itemsViejos = contenedor.getElementsByClassName('turno-item');
             for(let item of itemsViejos) {
                 item.classList.remove('nuevo');
             }
 
-            // Crear nuevo elemento
             const div = document.createElement('div');
-            div.className = 'turno-item nuevo';
+            div.className = 'turno-item';
+            if(esNuevo) div.classList.add('nuevo');
+            
             div.innerHTML = `
                 <span class="turno-col">${turno}</span>
                 <span class="mod-col">${modulo}</span>
             `;
             
-            // Insertar al principio
             contenedor.insertBefore(div, contenedor.firstChild);
             turnosMostrados.unshift(div);
 
-            // Mantener solo los últimos MAX_TURNOS
             if (turnosMostrados.length > MAX_TURNOS) {
                 const ultimo = turnosMostrados.pop();
                 contenedor.removeChild(ultimo);
+            }
+
+            if(esNuevo) {
+                llamarPorVoz(turno, modulo);
             }
         }
 
         // --- SÍNTESIS DE VOZ (TTS) ---
         function llamarPorVoz(turno, modulo) {
-            if ('speechSynthesis' in window) {
-                // Separar letras y números para que se lea mejor (ej. L 70 en vez de L70)
-                const turnoHablado = turno.replace(/([a-zA-Z])(\d)/g, '$1 $2');
-                const texto = `Turno ${turnoHablado}, dirigirse a ${modulo}`;
-                
-                const utterance = new SpeechSynthesisUtterance(texto);
-                utterance.lang = 'es-ES';
-                utterance.rate = 0.85; // Un poco más lento para mayor claridad
-                window.speechSynthesis.speak(utterance);
+            try {
+                if ('speechSynthesis' in window) {
+                    const turnoHablado = turno.replace(/([a-zA-Z])(\d)/g, '$1 $2');
+                    const texto = `Turno ${turnoHablado}, dirigirse a ${modulo}`;
+                    
+                    const utterance = new SpeechSynthesisUtterance(texto);
+                    utterance.lang = 'es-ES';
+                    utterance.rate = 0.85; 
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (e) {
+                console.error("Audio bloqueado por el navegador", e);
             }
         }
+
+        // Arrancar
+        cargarHistorial();
+        conectarWebSocket();
     </script>
 </body>
 </html>
