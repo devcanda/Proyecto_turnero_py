@@ -24,13 +24,11 @@
         .btn-entidad { background-color: #2b446a; color: white; border: none; padding: 25px 20px; font-size: 20px; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
         .btn-vip { grid-column: 1 / -1; width: 50%; margin: 0 auto; }
         
-        /* Estilos del Formulario de Registro */
         .form-container { width: 100%; max-width: 450px; text-align: left; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
         .form-label { font-weight: bold; color: #21437c; display: block; margin-bottom: 8px; font-size: 18px; }
         .form-input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 18px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 5px; font-family: inherit; }
         .form-input:disabled { background-color: #f1f4f9; color: #666; }
         
-        /* Estilos del Modal (Política de Datos) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 30px; border-radius: 10px; max-width: 650px; width: 90%; max-height: 80vh; overflow-y: auto; text-align: justify; line-height: 1.6; color: #333; position: relative; }
         .btn-cerrar-modal { background: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 20px; width: 100%; }
@@ -45,7 +43,6 @@
         <button class="btn-regresar hidden" id="btn-back" onclick="retroceder()">Regresar</button>
     </div>
 
-    <!-- PASO 1: TECLADO NUMÉRICO -->
     <div id="step-1" class="step-wrapper">
         <h2>Por favor digite su documento</h2>
         <div class="display-box" id="display"></div>
@@ -66,7 +63,6 @@
         <button class="btn-continuar" id="btn-verificar" onclick="verificarPaciente()">Continuar</button>
     </div>
 
-    <!-- PASO 1B: REGISTRO DE PACIENTE NUEVO -->
     <div id="step-registro" class="step-wrapper-wide hidden">
         <h2>Registro de Nuevo Paciente</h2>
         <div class="form-container">
@@ -96,7 +92,6 @@
         </div>
     </div>
 
-    <!-- PASO 2: SELECCIÓN DE ENTIDAD PRINCIPAL -->
     <div id="step-2" class="step-wrapper-wide hidden">
         <h2>Seleccione su entidad de atención</h2>
         <h3 id="saludo-paciente"></h3>
@@ -113,7 +108,6 @@
         </div>
     </div>
 
-    <!-- PASO 3: TRÁMITES PARA SOAT -->
     <div id="step-3" class="step-wrapper-wide hidden">
         <h2>Por favor seleccione el tramite</h2>
         <div class="grid-tramites">
@@ -125,18 +119,16 @@
         </div>
     </div>
 
-    <!-- MODAL POLÍTICA DE DATOS -->
     <div id="modal-politica" class="modal-overlay">
         <div class="modal-content">
             <h2 style="text-align: center; font-size: 22px;">Autorización para el Tratamiento de Datos Personales</h2>
-            <p>De conformidad con lo dispuesto en la <strong>Ley 1581 de 2012</strong> (Ley Estatutaria de Protección de Datos Personales) y el Decreto Reglamentario 1377 de 2013 de la República de Colombia, autorizo de manera voluntaria, previa, explícita, informada e inequívoca a la entidad (con sede principal en Tuluá) para la recolección, almacenamiento, uso, circulación, supresión y tratamiento en general de mis datos personales (nombre y número de identificación) ingresados en este sistema.</p>
+            <p>De conformidad con lo dispuesto en la <strong>Ley 1581 de 2012</strong> (Ley Estatutaria de Protección de Datos Personales) y el Decreto Reglamentario 1377 de 2013 de la República de Colombia, autorizo de manera voluntaria, previa, explícita, informada e inequívoca a la entidad para la recolección, almacenamiento, uso, circulación, supresión y tratamiento en general de mis datos personales (nombre, tipo y número de identificación) ingresados en este sistema.</p>
             <p><strong>Finalidad del Tratamiento:</strong> Los datos suministrados serán utilizados única y exclusivamente con los siguientes propósitos:</p>
             <ul>
                 <li>Gestionar la asignación de turnos, agendamiento de citas y prestación de servicios de salud.</li>
                 <li>Mantener un registro histórico y estadístico de atención al paciente.</li>
                 <li>Realizar cruces de información con bases de datos administrativas y comerciales internas de la empresa con el fin de optimizar la prestación de los servicios y realizar seguimiento de calidad.</li>
             </ul>
-            <p><strong>Derechos del Titular:</strong> Declaro que se me han informado mis derechos como titular de los datos personales, los cuales incluyen conocer, actualizar y rectificar mi información frente a la entidad responsable, solicitar prueba de la presente autorización, revocar el consentimiento otorgado y/o solicitar la supresión de mis datos en los casos que la ley lo permita.</p>
             <button class="btn-cerrar-modal" onclick="cerrarModal()">Entendido y Cerrar</button>
         </div>
     </div>
@@ -186,7 +178,7 @@
                 } else {
                     document.getElementById('reg-documento').value = documento;
                     document.getElementById('reg-nombre').value = "";
-                    document.getElementById('reg-tipo-doc').value = ""; // Resetea el select
+                    document.getElementById('reg-tipo-doc').value = ""; 
                     document.getElementById('reg-politica').checked = false;
                     mostrarPaso('registro');
                 }
@@ -214,6 +206,7 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    // Restaurado: Se vuelve a enviar el tipo de documento al backend
                     body: JSON.stringify({ 
                         tipo_doc: tipoDoc,
                         nombre: nombre.toUpperCase(), 
