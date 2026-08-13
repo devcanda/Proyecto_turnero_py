@@ -5,7 +5,6 @@ from database import engine, get_db, init_db
 import models, schemas
 from socket_manager import manager
 
-# Usamos nuestra nueva función a prueba de fallos
 init_db()
 
 app = FastAPI(title="API Turnero Digital", version="1.0.0")
@@ -35,26 +34,46 @@ def crear_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_d
 def obtener_pacientes(db: Session = Depends(get_db)):
     return db.query(models.Paciente).all()
 
-# --- RUTAS DE TURNOS Y WEBSOCKET ---
+# --- RUTAS DE TURNOS ---
 @app.post("/turnos/", response_model=schemas.Turno, tags=["Turnos"])
 async def crear_turno(turno: schemas.TurnoCreate, db: Session = Depends(get_db)):
+    # Guarda en BD silenciosamente (Estado por defecto: EN_ESPERA)
     nuevo_turno = models.Turno(**turno.model_dump())
     db.add(nuevo_turno)
     db.commit()
     db.refresh(nuevo_turno)
+    return nuevo_turno
+
+@app.get("/turnos/pendientes", response_model=list[schemas.Turno], tags=["Turnos"])
+def obtener_turnos_pendientes(db: Session = Depends(get_db)):
+    # Devuelve solo los turnos que no han sido llamados
+    return db.query(models.Turno).filter(models.Turno.estado == 'EN_ESPERA').all()
+
+@app.put("/turnos/{turno_id}/llamar", response_model=schemas.Turno, tags=["Turnos"])
+async def llamar_turno(turno_id: int, db: Session = Depends(get_db)):
+    turno = db.query(models.Turno).filter(models.Turno.id == turno_id).first()
+    if not turno:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
     
+    # Actualiza el estado
+    turno.estado = 'LLAMADO'
+    db.commit()
+    db.refresh(turno)
+    
+    # AHORA SÍ: Dispara el evento WebSocket a la Sala de Espera
     evento = {
         "accion": "NUEVO_TURNO",
         "datos": {
-            "id": nuevo_turno.id,
-            "nomenclatura": nuevo_turno.nomenclatura,
-            "numero": nuevo_turno.numero_turno,
-            "servicio": nuevo_turno.servicio
+            "id": turno.id,
+            "nomenclatura": turno.nomenclatura,
+            "numero": turno.numero_turno,
+            "servicio": turno.servicio
         }
     }
     await manager.broadcast(evento)
-    return nuevo_turno
+    return turno
 
+# --- WEBSOCKET ---
 @app.websocket("/ws/pantalla")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)

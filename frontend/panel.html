@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Turnero Digital</title>
+    <!-- Modern Typography: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --secondary-color: #3f37c9;
+            --background-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .panel-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            min-height: 500px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .turnos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .turno-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .turno-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-light), var(--primary-color));
+            border-radius: 12px 0 0 12px;
+        }
+
+        .turno-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .turno-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .turno-numero {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .turno-servicio {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .turno-detalles {
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .btn-llamar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .btn-llamar:hover {
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-llamar:active {
+            transform: translateY(0);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-light);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fa-solid fa-desktop"></i> Panel de Control</h1>
+        <button class="refresh-btn" onclick="cargarTurnos()" id="btnRefresh">
+            <i class="fa-solid fa-rotate-right"></i> Actualizar
+        </button>
+    </div>
+
+    <div class="panel-container">
+        <div id="loading" class="loading-container">
+            <div class="loader" style="display: block; width: 40px; height: 40px; border-width: 4px;"></div>
+        </div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fa-solid fa-mug-hot"></i>
+            <h3>No hay turnos pendientes</h3>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">La sala de espera está vacía por ahora.</p>
+        </div>
+
+        <div id="turnosGrid" class="turnos-grid" style="display: none;">
+            <!-- Cards will be injected here -->
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // API Base URL - Asumimos que está expuesta en el puerto 8100 desde el docker-compose
+        // o si es la misma red, ajustamos según el entorno.
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:8100' 
+            : `http://${window.location.hostname}:8100`;
+
+        let turnos = [];
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarTurnos();
+            // Refresco automático cada 10 segundos
+            setInterval(cargarTurnos, 10000);
+        });
+
+        async function cargarTurnos() {
+            const btnRefresh = document.getElementById('btnRefresh');
+            const icon = btnRefresh.querySelector('i');
+            
+            icon.classList.add('fa-spin');
+            
+            try {
+                const response = await fetch(`${API_URL}/turnos/pendientes`);
+                if (!response.ok) throw new Error('Error al obtener turnos');
+                
+                turnos = await response.json();
+                renderizarTurnos();
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarToast("Error al cargar los turnos pendientes", "error");
+            } finally {
+                setTimeout(() => icon.classList.remove('fa-spin'), 500);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderizarTurnos() {
+            const grid = document.getElementById('turnosGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (turnos.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.style.display = 'grid';
+            
+            // Ordenar por ID para que los más antiguos salgan primero
+            const turnosOrdenados = [...turnos].sort((a, b) => a.id - b.id);
+            
+            grid.innerHTML = turnosOrdenados.map(turno => `
+                <div class="turno-card" id="turno-${turno.id}">
+                    <div class="turno-header">
+                        <div class="turno-numero">${turno.nomenclatura}${turno.numero_turno}</div>
+                        <div class="turno-servicio">${turno.servicio}</div>
+                    </div>
+                    <div class="turno-detalles">
+                        <i class="fa-regular fa-clock"></i> ID Interno: #${turno.id}
+                    </div>
+                    <button class="btn-llamar" onclick="llamarTurno(${turno.id}, '${turno.nomenclatura}${turno.numero_turno}')" id="btn-llamar-${turno.id}">
+                        <i class="fa-solid fa-bullhorn"></i> Llamar Paciente
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function llamarTurno(id, numeroCompleto) {
+            const btn = document.getElementById(`btn-llamar-${id}`);
+            const originalText = btn.innerHTML;
+            
+            // Estado de carga
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader" style="display:block; width:16px; height:16px; border-width:2px; margin:0;"></div> Llamando...';
+            
+            try {
+                const response = await fetch(`${API_URL}/turnos/${id}/llamar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Error al llamar el turno');
+                }
+                
+                // Mostrar éxito
+                mostrarToast(`Turno ${numeroCompleto} llamado con éxito`, 'success');
+                
+                // Animación de salida de la card
+                const card = document.getElementById(`turno-${id}`);
+                card.style.transform = 'scale(0.95)';
+                card.style.opacity = '0';
+                
+                // Remover de la lista local después de la animación
+                setTimeout(() => {
+                    turnos = turnos.filter(t => t.id !== id);
+                    renderizarTurnos();
+                }, 300);
+                
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarToast(error.message, "error");
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function mostrarToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            
+            const icon = tipo === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span>${mensaje}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
