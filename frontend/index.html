@@ -3,62 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pantalla - Turnero Digital</title>
+    <title>Sala de Espera - Turnero</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; text-align: center; padding: 50px; }
-        .turno-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; min-width: 300px; margin-top: 20px; }
-        h1 { color: #2c3e50; }
-        .numero { font-size: 80px; font-weight: bold; color: #e74c3c; margin: 10px 0; }
-        .servicio { font-size: 24px; color: #7f8c8d; }
-        #estado { color: #27ae60; font-weight: bold; margin-top: 20px; }
-        .desconectado { color: #c0392b !important; }
+        body { margin: 0; overflow: hidden; background-color: #0b3470; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* CABECERA */
+        .header { display: flex; justify-content: space-between; align-items: center; height: 12vh; background-color: #fff; padding: 0 30px; border-bottom: 5px solid #8bc34a; box-sizing: border-box; }
+        .header img { max-height: 8vh; }
+        .reloj-container { background: #0b3470; color: white; padding: 10px 40px; border-radius: 50px; display: flex; gap: 20px; align-items: center; border: 3px solid #8bc34a; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .hora { color: #8bc34a; font-size: 4vh; font-weight: 900; }
+        .fecha { font-size: 3vh; font-weight: bold; text-transform: capitalize; }
+
+        /* CUERPO CENTRAL */
+        .main-content { display: flex; height: 80vh; width: 100%; }
+        
+        /* ZONA DE VIDEO */
+        .video-section { width: 65%; background-color: #000; position: relative; }
+        .video-section video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* ZONA DE TURNOS */
+        .turnos-section { width: 35%; background-color: #0b3470; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #8bc34a; }
+        .tabla-header { display: flex; justify-content: space-between; background-color: #8bc34a; color: #0b3470; font-weight: 900; font-size: 3.5vh; padding: 15px 20px; border-radius: 10px; margin-bottom: 15px; text-transform: uppercase; }
+        .lista-turnos { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        
+        .turno-item { display: flex; justify-content: space-between; font-size: 4.5vh; font-weight: bold; padding: 20px; border-bottom: 2px solid rgba(139, 195, 74, 0.3); transition: all 0.5s ease; }
+        .turno-item.nuevo { animation: resplandor 2s infinite; background-color: rgba(139, 195, 74, 0.2); border-radius: 10px; border-bottom: none; }
+        .turno-col { color: white; width: 50%; }
+        .mod-col { color: #8bc34a; width: 50%; text-align: right; }
+
+        /* PIE DE PÁGINA (MARQUESINA) */
+        .footer { height: 8vh; background-color: #fff; color: #0b3470; display: flex; align-items: center; font-size: 3.5vh; font-weight: 900; overflow: hidden; white-space: nowrap; box-sizing: border-box; border-top: 5px solid #8bc34a; }
+        .marquee { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
+
+        @keyframes scroll { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+        @keyframes resplandor { 0% { box-shadow: 0 0 5px #8bc34a; } 50% { box-shadow: 0 0 25px #8bc34a, inset 0 0 15px #8bc34a; } 100% { box-shadow: 0 0 5px #8bc34a; } }
     </style>
 </head>
 <body>
 
-    <h1>Sala de Espera</h1>
-    <p id="estado">Conectando al servidor...</p>
+    <div class="header">
+        <img src="logo.png" alt="Logo Empresa">
+        <div class="reloj-container">
+            <div class="hora" id="reloj-hora">00:00</div>
+            <div class="fecha" id="reloj-fecha">Cargando...</div>
+        </div>
+    </div>
 
-    <div class="turno-card">
-        <div class="servicio" id="lbl-servicio">Esperando llamados...</div>
-        <div class="numero" id="lbl-numero">--</div>
+    <div class="main-content">
+        <!-- ZONA DE VIDEO INSTITUCIONAL -->
+        <div class="video-section">
+            <video src="video.mp4" autoplay loop muted></video>
+        </div>
+
+        <!-- ZONA DE LISTADO DE TURNOS -->
+        <div class="turnos-section">
+            <div class="tabla-header">
+                <span>TURNO</span>
+                <span>MÓDULO</span>
+            </div>
+            <div class="lista-turnos" id="contenedor-turnos">
+                <!-- Los turnos se inyectarán aquí vía WebSocket -->
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="marquee">
+            ::: BIENVENIDO AL CANAL DIGITAL DE ATENCIÓN ::: POR FAVOR ESTÉ ATENTO A SU LLAMADO EN PANTALLA ::: RECUERDE ACTUALIZAR SUS DATOS EN RECEPCIÓN :::
+        </div>
     </div>
 
     <script>
-        // Detecta automáticamente la IP del servidor donde está alojado
+        // --- RELOJ Y FECHA ---
+        function actualizarReloj() {
+            const ahora = new Date();
+            let horas = ahora.getHours();
+            let minutos = ahora.getMinutes();
+            const ampm = horas >= 12 ? 'PM' : 'AM';
+            horas = horas % 12;
+            horas = horas ? horas : 12; 
+            minutos = minutos < 10 ? '0' + minutos : minutos;
+            
+            document.getElementById('reloj-hora').innerText = `${horas}:${minutos}`;
+            
+            const opcionesFecha = { day: 'numeric', month: 'long' };
+            document.getElementById('reloj-fecha').innerText = ahora.toLocaleDateString('es-ES', opcionesFecha);
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        // --- LÓGICA DE TURNOS Y WEBSOCKET ---
         const serverIP = window.location.hostname;
-        
-        // Abre el túnel WebSocket directo al backend en el puerto 8100
         const ws = new WebSocket(`ws://${serverIP}:8100/ws/pantalla`);
+        const MAX_TURNOS = 5;
+        let turnosMostrados = [];
 
-        const estadoEl = document.getElementById('estado');
-        const numeroEl = document.getElementById('lbl-numero');
-        const servicioEl = document.getElementById('lbl-servicio');
-
-        ws.onopen = function() {
-            estadoEl.innerText = "🟢 Conectado en tiempo real";
-            estadoEl.classList.remove('desconectado');
-        };
-
-        // Aquí ocurre la magia: Escucha los mensajes que envía Python
         ws.onmessage = function(event) {
             const mensaje = JSON.parse(event.data);
             
             if (mensaje.accion === "NUEVO_TURNO") {
-                // Actualiza la pantalla instantáneamente
-                numeroEl.innerText = `${mensaje.datos.nomenclatura}${mensaje.datos.numero}`;
-                servicioEl.innerText = `Servicio: ${mensaje.datos.servicio}`;
+                const turnoStr = `${mensaje.datos.nomenclatura}${mensaje.datos.numero}`;
+                // TODO: El backend aún no envía el módulo, usamos un placeholder temporal
+                const moduloStr = "CAJA 1"; 
                 
-                // Efecto visual sencillo
-                document.body.style.backgroundColor = '#e8f6f3';
-                setTimeout(() => document.body.style.backgroundColor = '#f4f7f6', 500);
+                agregarTurnoAPantalla(turnoStr, moduloStr);
+                llamarPorVoz(turnoStr, moduloStr);
             }
         };
 
-        ws.onclose = function() {
-            estadoEl.innerText = "🔴 Desconectado del servidor. Intentando reconectar...";
-            estadoEl.classList.add('desconectado');
-        };
+        function agregarTurnoAPantalla(turno, modulo) {
+            const contenedor = document.getElementById('contenedor-turnos');
+            
+            // Quitar clase 'nuevo' a los anteriores
+            const itemsViejos = contenedor.getElementsByClassName('turno-item');
+            for(let item of itemsViejos) {
+                item.classList.remove('nuevo');
+            }
+
+            // Crear nuevo elemento
+            const div = document.createElement('div');
+            div.className = 'turno-item nuevo';
+            div.innerHTML = `
+                <span class="turno-col">${turno}</span>
+                <span class="mod-col">${modulo}</span>
+            `;
+            
+            // Insertar al principio
+            contenedor.insertBefore(div, contenedor.firstChild);
+            turnosMostrados.unshift(div);
+
+            // Mantener solo los últimos MAX_TURNOS
+            if (turnosMostrados.length > MAX_TURNOS) {
+                const ultimo = turnosMostrados.pop();
+                contenedor.removeChild(ultimo);
+            }
+        }
+
+        // --- SÍNTESIS DE VOZ (TTS) ---
+        function llamarPorVoz(turno, modulo) {
+            if ('speechSynthesis' in window) {
+                // Separar letras y números para que se lea mejor (ej. L 70 en vez de L70)
+                const turnoHablado = turno.replace(/([a-zA-Z])(\d)/g, '$1 $2');
+                const texto = `Turno ${turnoHablado}, dirigirse a ${modulo}`;
+                
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.85; // Un poco más lento para mayor claridad
+                window.speechSynthesis.speak(utterance);
+            }
+        }
     </script>
 </body>
 </html>
