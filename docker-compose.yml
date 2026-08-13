@@ -17,7 +17,7 @@ services:
 
   backend:
     build: ./backend
-    image: turnero_backend_img:v24
+    image: turnero_backend_img:v26
     container_name: turnero_backend
     restart: always
     ports:
@@ -29,18 +29,13 @@ services:
 
   frontend:
     build: ./frontend
-    image: turnero_frontend_img:v25
+    image: turnero_frontend_img:v26
     container_name: turnero_frontend
     restart: always
     ports:
       - "8090:80"
-    volumes:
-      # IMPORTANTE: Cambia RUTA_ABSOLUTA_DEL_SERVIDOR antes de desplegar
-      - /RUTA_ABSOLUTA_DEL_SERVIDOR/frontend:/usr/share/nginx/html
     depends_on:
       - backend
-    networks:
-      - turnero_net
     networks:
       - turnero_net
 
