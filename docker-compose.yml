@@ -17,7 +17,7 @@ services:
 
   backend:
     build: ./backend
-    image: turnero_backend_img:v11
+    image: turnero_backend_img:v16
     container_name: turnero_backend
     restart: always
     ports:
@@ -29,13 +29,11 @@ services:
 
   frontend:
     build: ./frontend
-    image: turnero_frontend_img:v15
+    image: turnero_frontend_img:v16
     container_name: turnero_frontend
     restart: always
     ports:
       - "8090:80"
-    volumes:
-      - D:/git_antigravity/Proyecto_turnero_py/frontend:/usr/share/nginx/html
     depends_on:
       - backend
     networks:
