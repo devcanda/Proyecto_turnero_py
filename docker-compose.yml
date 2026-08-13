@@ -29,11 +29,13 @@ services:
 
   frontend:
     build: ./frontend
-    image: turnero_frontend_img:v13
+    image: turnero_frontend_img:v14
     container_name: turnero_frontend
     restart: always
     ports:
       - "8090:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
     depends_on:
       - backend
     networks:
