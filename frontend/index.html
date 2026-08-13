@@ -7,35 +7,39 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #0b3470; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; }
         
-        /* CABECERA */
+        /* ESTRUCTURA PRINCIPAL (Arriba del footer) */
+        .main-container { display: flex; height: 92vh; width: 100%; }
+        
+        /* COLUMNA IZQUIERDA (Cabecera + Video) */
+        .left-column { width: 65%; display: flex; flex-direction: column; }
+        
+        /* CABECERA (Solo izquierda) */
         .header { display: flex; justify-content: space-between; align-items: center; height: 12vh; background-color: #fff; padding: 0 30px; border-bottom: 5px solid #92d050; box-sizing: border-box; }
         .header img { max-height: 8vh; }
-        .reloj-container { background: #0b3470; color: white; padding: 10px 40px; border-radius: 50px; display: flex; gap: 20px; align-items: center; border: 3px solid #92d050; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .hora { color: #92d050; font-size: 4vh; font-weight: 900; }
-        .fecha { font-size: 3vh; font-weight: bold; text-transform: capitalize; }
+        .reloj-container { background: #0b3470; color: white; padding: 8px 30px; border-radius: 50px; display: flex; gap: 15px; align-items: center; border: 3px solid #92d050; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .hora { color: #92d050; font-size: 3.5vh; font-weight: 900; }
+        .fecha { font-size: 2.8vh; font-weight: bold; text-transform: capitalize; }
 
-        /* CUERPO CENTRAL */
-        .main-content { display: flex; height: 80vh; width: 100%; }
-        
         /* ZONA DE VIDEO */
-        .video-section { width: 65%; background-color: #000; position: relative; }
+        .video-section { flex: 1; background-color: #000; position: relative; border-right: 5px solid #92d050; }
         .youtube-iframe { width: 100%; height: 100%; pointer-events: none; }
         
-        /* ZONA DE TURNOS */
-        .turnos-section { width: 35%; background-color: #0b3470; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #92d050; }
+        /* COLUMNA DERECHA (Turnos - Altura Completa) */
+        .turnos-section { width: 35%; background-color: #0b3470; padding: 20px 30px; box-sizing: border-box; display: flex; flex-direction: column; }
         
         /* ENCABEZADOS ESTILO "PILL" */
-        .tabla-header { display: flex; justify-content: space-between; margin-bottom: 25px; }
-        .header-pill { background-color: #92d050; color: white; width: 45%; text-align: center; font-size: 4vh; font-weight: 900; padding: 10px 0; border-radius: 15px; border: 3px solid #7cb342; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .tabla-header { display: flex; justify-content: space-between; margin-bottom: 25px; padding-top: 10px; }
+        .header-pill { background-color: #92d050; color: white; width: 45%; text-align: center; font-size: 4vh; font-weight: 900; padding: 12px 0; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); text-transform: uppercase; }
         
-        .lista-turnos { flex: 1; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        .lista-turnos { flex: 1; display: flex; flex-direction: column; gap: 2.5vh; overflow: hidden; }
         
         /* FILAS DE TURNOS CENTRADAS */
-        .turno-item { display: flex; justify-content: space-between; font-size: 5vh; font-weight: bold; transition: all 0.5s ease; }
+        .turno-item { display: flex; justify-content: space-between; font-size: 5.5vh; font-weight: bold; transition: all 0.5s ease; }
         .turno-item.nuevo .turno-col, .turno-item.nuevo .mod-col { animation: parpadeoNuevo 1.5s infinite alternate; color: #92d050; border-color: #fff; }
         
-        .turno-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 8px; }
-        .mod-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 8px; text-transform: uppercase; }
+        /* Líneas verdes individuales (Idéntico a la foto) */
+        .turno-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .mod-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 5px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
 
         /* PIE DE PÁGINA (MARQUESINA) */
         .footer { height: 8vh; background-color: #fff; color: #0b3470; display: flex; align-items: center; font-size: 3.5vh; font-weight: 900; overflow: hidden; white-space: nowrap; box-sizing: border-box; border-top: 5px solid #92d050; }
@@ -47,24 +51,27 @@
 </head>
 <body>
 
-    <div class="header">
-        <img src="logo.png" alt="Logo Empresa">
-        <div class="reloj-container">
-            <div class="hora" id="reloj-hora">00:00</div>
-            <div class="fecha" id="reloj-fecha">Cargando...</div>
+    <div class="main-container">
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="left-column">
+            <div class="header">
+                <img src="logo.png" alt="Logo Empresa">
+                <div class="reloj-container">
+                    <div class="hora" id="reloj-hora">00:00</div>
+                    <div class="fecha" id="reloj-fecha">Cargando...</div>
+                </div>
+            </div>
+            <div class="video-section">
+                <iframe class="youtube-iframe" 
+                    src="https://www.youtube.com/embed/qZcLuGXM6H4?autoplay=1&mute=1&controls=0&loop=1&playlist=qZcLuGXM6H4&modestbranding=1&showinfo=0" 
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+            </div>
         </div>
-    </div>
 
-    <div class="main-content">
-        <div class="video-section">
-            <iframe class="youtube-iframe" 
-                src="https://www.youtube.com/embed/qZcLuGXM6H4?autoplay=1&mute=1&controls=0&loop=1&playlist=qZcLuGXM6H4&modestbranding=1&showinfo=0" 
-                frameborder="0" 
-                allow="autoplay; encrypted-media" 
-                allowfullscreen>
-            </iframe>
-        </div>
-
+        <!-- COLUMNA DERECHA -->
         <div class="turnos-section">
             <div class="tabla-header">
                 <div class="header-pill">TURNO</div>
@@ -78,13 +85,14 @@
 
     <div class="footer">
         <div class="marquee">
-            ::: BIENVENIDO AL CANAL DIGITAL DE ATENCIÓN ::: POR FAVOR ESTÉ ATENTO A SU LLAMADO EN PANTALLA :::
+            ::: BIENVENIDO AL CANAL DIGITAL DE ATENCIÓN ::: POR FAVOR ESTÉ ATENTO A SU LLAMADO EN PANTALLA ::: RECUERDE ACTUALIZAR SUS DATOS EN RECEPCIÓN :::
         </div>
     </div>
 
     <script>
         const serverIP = window.location.hostname;
-        const MAX_TURNOS = 5;
+        // Al expandir la columna, caben cómodamente 6 turnos
+        const MAX_TURNOS = 6; 
         let turnosMostrados = [];
 
         function actualizarReloj() {
