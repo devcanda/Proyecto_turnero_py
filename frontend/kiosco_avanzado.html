@@ -27,7 +27,7 @@
         /* Estilos del Formulario de Registro */
         .form-container { width: 100%; max-width: 450px; text-align: left; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
         .form-label { font-weight: bold; color: #21437c; display: block; margin-bottom: 8px; font-size: 18px; }
-        .form-input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 18px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 5px; }
+        .form-input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 18px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 5px; font-family: inherit; }
         .form-input:disabled { background-color: #f1f4f9; color: #666; }
         
         /* Estilos del Modal (Política de Datos) */
@@ -70,6 +70,15 @@
     <div id="step-registro" class="step-wrapper-wide hidden">
         <h2>Registro de Nuevo Paciente</h2>
         <div class="form-container">
+            <!-- Nuevo Campo: Tipo de Documento -->
+            <label class="form-label">Tipo de Documento:</label>
+            <select id="reg-tipo-doc" class="form-input" required>
+                <option value="" disabled selected>Seleccione una opción...</option>
+                <option value="CC">Cédula de Ciudadanía (C.C)</option>
+                <option value="TI">Tarjeta de Identidad (T.I)</option>
+                <option value="CE">Cédula de Extranjería (C.E)</option>
+            </select>
+
             <label class="form-label">Documento de Identidad:</label>
             <input type="text" id="reg-documento" class="form-input" disabled>
 
@@ -178,6 +187,7 @@
                 } else {
                     document.getElementById('reg-documento').value = documento;
                     document.getElementById('reg-nombre').value = "";
+                    document.getElementById('reg-tipo-doc').value = ""; // Resetea el select
                     document.getElementById('reg-politica').checked = false;
                     mostrarPaso('registro');
                 }
@@ -190,9 +200,11 @@
         }
 
         async function registrarPaciente() {
+            const tipoDoc = document.getElementById('reg-tipo-doc').value;
             const nombre = document.getElementById('reg-nombre').value.trim();
             const politica = document.getElementById('reg-politica').checked;
 
+            if (tipoDoc === "") { alert("Por favor, seleccione su Tipo de Documento."); return; }
             if (nombre === "") { alert("Por favor, ingrese su nombre completo."); return; }
             if (!politica) { alert("Debe aceptar la Política de Tratamiento de Datos para continuar."); return; }
 
@@ -203,7 +215,11 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre: nombre.toUpperCase(), numero_identificacion: documento })
+                    body: JSON.stringify({ 
+                        tipo_doc: tipoDoc,
+                        nombre: nombre.toUpperCase(), 
+                        numero_identificacion: documento 
+                    })
                 });
 
                 if (response.ok) {
@@ -215,7 +231,6 @@
                     const errorData = await response.json();
                     let errMsg = errorData.detail || 'Verifique los datos ingresados';
                     
-                    // Aquí desempaquetamos el error de Pydantic
                     if (Array.isArray(errMsg)) {
                         errMsg = errMsg.map(e => `➤ El campo '${e.loc[e.loc.length-1]}' fue rechazado: ${e.msg}`).join('\n');
                     } else if (typeof errMsg === 'object') {
