@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosco - Solicitar Turno</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ecf0f1; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .kiosco-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 30px; font-size: 32px; }
+        .form-group { margin-bottom: 25px; text-align: left; }
+        label { display: block; font-weight: bold; color: #34495e; margin-bottom: 10px; font-size: 18px; }
+        input[type="text"], select { width: 100%; padding: 15px; border: 2px solid #bdc3c7; border-radius: 10px; font-size: 18px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; font-size: 22px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        button:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+
+    <div class="kiosco-card">
+        <h1>Bienvenido</h1>
+        <form id="kiosco-form" onsubmit="solicitarTurno(event)">
+            <div class="form-group">
+                <label for="identificacion">Número de Identificación:</label>
+                <input type="text" id="identificacion" placeholder="Ej. 1116255806" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="servicio">Seleccione el Servicio:</label>
+                <select id="servicio" required>
+                    <option value="L">Laboratorio</option>
+                    <option value="M">Medicina General</option>
+                    <option value="F">Facturación</option>
+                </select>
+            </div>
+
+            <button type="submit">Solicitar Turno</button>
+        </form>
+    </div>
+
+    <script>
+        async function solicitarTurno(event) {
+            event.preventDefault();
+            
+            const btn = document.querySelector('button');
+            btn.innerText = "Procesando...";
+            btn.disabled = true;
+
+            const identificacion = document.getElementById('identificacion').value;
+            const servicioSelect = document.getElementById('servicio');
+            const nombreServicio = servicioSelect.options[servicioSelect.selectedIndex].text;
+            const nomenclatura = servicioSelect.value;
+            const serverIP = window.location.hostname;
+
+            try {
+                // 1. Validar si el paciente existe en la base de datos
+                const resPacientes = await fetch(`http://${serverIP}:8100/pacientes/`);
+                const pacientes = await resPacientes.json();
+                const paciente = pacientes.find(p => p.numero_identificacion === identificacion);
+
+                if (!paciente) {
+                    alert("Paciente no encontrado. Por favor, diríjase a recepción para registrar sus datos.");
+                    resetButton(btn);
+                    return;
+                }
+
+                // 2. Generar Turno (Simulación de correlativo para esta fase)
+                const numeroAleatorio = Math.floor(Math.random() * 100) + 1;
+
+                const payload = {
+                    paciente_id: paciente.id,
+                    servicio: nombreServicio,
+                    nomenclatura: nomenclatura,
+                    numero_turno: numeroAleatorio
+                };
+
+                // 3. Enviar a la API (Esto disparará el WebSocket automáticamente)
+                const resTurno = await fetch(`http://${serverIP}:8100/turnos/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resTurno.ok) {
+                    const data = await resTurno.json();
+                    alert(`¡Turno generado con éxito!\n\nSu turno es: ${data.nomenclatura}${data.numero_turno}\nPor favor, mire la pantalla.`);
+                    document.getElementById('kiosco-form').reset();
+                } else {
+                    alert("Ocurrió un error al generar el turno.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión con el servidor.");
+            } finally {
+                resetButton(btn);
+            }
+        }
+
+        function resetButton(btn) {
+            btn.innerText = "Solicitar Turno";
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
