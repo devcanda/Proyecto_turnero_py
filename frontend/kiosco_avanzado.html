@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosco Avanzado - Turnero</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; user-select: none; position: relative; }
+        .header-top { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .btn-regresar { background-color: #e0e4e8; color: black; border: none; padding: 15px 30px; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; }
+        h2 { color: #21437c; margin-bottom: 25px; font-size: 28px; text-transform: uppercase; text-align: center; font-weight: bold; }
+        h3 { color: #8bc34a; margin-top: -15px; margin-bottom: 25px; font-size: 22px; text-align: center; }
+        
+        .step-wrapper { width: 100%; max-width: 450px; display: flex; flex-direction: column; align-items: center; }
+        .display-box { background: #25467a; color: white; font-size: 40px; padding: 20px; margin-bottom: 5px; min-height: 50px; width: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-sizing: border-box; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 100%; }
+        .key { background-color: #25467a; color: white; border: none; padding: 25px 20px; font-size: 35px; font-weight: bold; cursor: pointer; }
+        .key.action { background-color: #b3b9c5; color: white; }
+        .btn-continuar { background-color: #a3cc39; color: white; border: none; padding: 20px; width: 100%; font-size: 30px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+
+        .step-wrapper-wide { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; }
+        .grid-entidades { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .grid-tramites { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 650px; }
+        .btn-entidad { background-color: #2b446a; color: white; border: none; padding: 25px 20px; font-size: 20px; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
+        .btn-vip { grid-column: 1 / -1; width: 50%; margin: 0 auto; }
+        
+        /* Estilos del Formulario de Registro */
+        .form-container { width: 100%; max-width: 450px; text-align: left; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .form-label { font-weight: bold; color: #21437c; display: block; margin-bottom: 8px; font-size: 18px; }
+        .form-input { width: 100%; padding: 15px; margin-bottom: 20px; font-size: 18px; box-sizing: border-box; border: 2px solid #ddd; border-radius: 5px; }
+        .form-input:disabled { background-color: #f1f4f9; color: #666; }
+        
+        /* Estilos del Modal (Política de Datos) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; max-width: 650px; width: 90%; max-height: 80vh; overflow-y: auto; text-align: justify; line-height: 1.6; color: #333; position: relative; }
+        .btn-cerrar-modal { background: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 20px; width: 100%; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header-top">
+        <img src="logo.png" alt="Logo" style="max-height: 80px;">
+        <button class="btn-regresar hidden" id="btn-back" onclick="retroceder()">Regresar</button>
+    </div>
+
+    <!-- PASO 1: TECLADO NUMÉRICO -->
+    <div id="step-1" class="step-wrapper">
+        <h2>Por favor digite su documento</h2>
+        <div class="display-box" id="display"></div>
+        <div class="keypad">
+            <button class="key" onclick="press('1')">1</button>
+            <button class="key" onclick="press('2')">2</button>
+            <button class="key" onclick="press('3')">3</button>
+            <button class="key" onclick="press('4')">4</button>
+            <button class="key" onclick="press('5')">5</button>
+            <button class="key" onclick="press('6')">6</button>
+            <button class="key" onclick="press('7')">7</button>
+            <button class="key" onclick="press('8')">8</button>
+            <button class="key" onclick="press('9')">9</button>
+            <button class="key action" onclick="clearDisplay()">✖</button>
+            <button class="key" onclick="press('0')">0</button>
+            <button class="key action" onclick="backspace()">⮜</button>
+        </div>
+        <button class="btn-continuar" id="btn-verificar" onclick="verificarPaciente()">Continuar</button>
+    </div>
+
+    <!-- PASO 1B: REGISTRO DE PACIENTE NUEVO -->
+    <div id="step-registro" class="step-wrapper-wide hidden">
+        <h2>Registro de Nuevo Paciente</h2>
+        <div class="form-container">
+            <label class="form-label">Documento de Identidad:</label>
+            <input type="text" id="reg-documento" class="form-input" disabled>
+
+            <label class="form-label">Nombre Completo:</label>
+            <input type="text" id="reg-nombre" class="form-input" placeholder="Ej. Juan Pérez" required>
+
+            <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
+                <input type="checkbox" id="reg-politica" style="width: 25px; height: 25px; margin-right: 10px; cursor: pointer;">
+                <label for="reg-politica" style="font-size: 15px; cursor: pointer;">
+                    Autorizo el tratamiento de mis datos personales y acepto la 
+                    <a href="#" onclick="abrirModal(event)" style="color: #21437c; font-weight: bold; text-decoration: underline;">Política de Tratamiento de Datos</a>.
+                </label>
+            </div>
+
+            <button class="btn-continuar" id="btn-guardar" onclick="registrarPaciente()">Registrar y Continuar</button>
+        </div>
+    </div>
+
+    <!-- PASO 2: SELECCIÓN DE ENTIDAD PRINCIPAL -->
+    <div id="step-2" class="step-wrapper-wide hidden">
+        <h2>Seleccione su entidad de atención</h2>
+        <h3 id="saludo-paciente"></h3>
+        <div class="grid-entidades">
+            <button class="btn-entidad" onclick="seleccionarEntidad('SOAT')">SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('ARL', 'A')">ARL</button>
+            <button class="btn-entidad" onclick="generarTurno('Medicina Prepagada', 'M')">Medicina Prepagada</button>
+            <button class="btn-entidad" onclick="generarTurno('Planes Complementarios', 'P')">Planes Complementarios</button>
+            <button class="btn-entidad" onclick="generarTurno('Pólizas de Salud', 'S')">Pólizas de Salud</button>
+            <button class="btn-entidad" onclick="generarTurno('Pólizas Estudiantiles', 'E')">Pólizas Estudiantiles</button>
+            <button class="btn-entidad" onclick="generarTurno('Empresariales', 'EM')">Empresariales</button>
+            <button class="btn-entidad" onclick="generarTurno('Particulares', 'PA')">Particulares</button>
+            <button class="btn-entidad btn-vip" onclick="generarTurno('VIP', 'V')">VIP</button>
+        </div>
+    </div>
+
+    <!-- PASO 3: TRÁMITES PARA SOAT -->
+    <div id="step-3" class="step-wrapper-wide hidden">
+        <h2>Por favor seleccione el tramite</h2>
+        <div class="grid-tramites">
+            <button class="btn-entidad" onclick="generarTurno('Imágenes SOAT', 'IS')">IMÁGENES SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Laboratorio Clínico SOAT', 'LS')">LABORATORIO CLÍNICO SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Medicina del Dolor S1 SOAT', 'MS')">MEDICINA DEL DOLOR S1 SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Post Quirúrgico SOAT', 'PS')">POST QUIRÚRGICO SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Atención Priorizada S1 SOAT', 'AS')">ATENCIÓN PRIORIZADA S1 SOAT</button>
+        </div>
+    </div>
+
+    <!-- MODAL POLÍTICA DE DATOS -->
+    <div id="modal-politica" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="text-align: center; font-size: 22px;">Autorización para el Tratamiento de Datos Personales</h2>
+            <p>De conformidad con lo dispuesto en la <strong>Ley 1581 de 2012</strong> (Ley Estatutaria de Protección de Datos Personales) y el Decreto Reglamentario 1377 de 2013 de la República de Colombia, autorizo de manera voluntaria, previa, explícita, informada e inequívoca a la entidad (con sede principal en Tuluá) para la recolección, almacenamiento, uso, circulación, supresión y tratamiento en general de mis datos personales (nombre y número de identificación) ingresados en este sistema.</p>
+            <p><strong>Finalidad del Tratamiento:</strong> Los datos suministrados serán utilizados única y exclusivamente con los siguientes propósitos:</p>
+            <ul>
+                <li>Gestionar la asignación de turnos, agendamiento de citas y prestación de servicios de salud.</li>
+                <li>Mantener un registro histórico y estadístico de atención al paciente.</li>
+                <li>Realizar cruces de información con bases de datos administrativas y comerciales internas de la empresa con el fin de optimizar la prestación de los servicios y realizar seguimiento de calidad.</li>
+            </ul>
+            <p><strong>Derechos del Titular:</strong> Declaro que se me han informado mis derechos como titular de los datos personales, los cuales incluyen conocer, actualizar y rectificar mi información frente a la entidad responsable, solicitar prueba de la presente autorización, revocar el consentimiento otorgado y/o solicitar la supresión de mis datos en los casos que la ley lo permita.</p>
+            <button class="btn-cerrar-modal" onclick="cerrarModal()">Entendido y Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        let documento = "";
+        let pacienteActualId = null;
+        let pasoActual = '1';
+        const displayEl = document.getElementById('display');
+        const serverIP = window.location.hostname;
+
+        function press(num) { if (documento.length < 15) { documento += num; displayEl.innerText = documento; } }
+        function clearDisplay() { documento = ""; displayEl.innerText = ""; pacienteActualId = null; }
+        function backspace() { documento = documento.slice(0, -1); displayEl.innerText = documento; }
+
+        function mostrarPaso(paso) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-registro').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            
+            document.getElementById(`step-${paso}`).classList.remove('hidden');
+            
+            const btnBack = document.getElementById('btn-back');
+            if (paso === '1') { btnBack.classList.add('hidden'); } 
+            else { btnBack.classList.remove('hidden'); }
+            
+            pasoActual = paso;
+        }
+
+        // LÓGICA DE VALIDACIÓN DE PACIENTE
+        async function verificarPaciente() {
+            if (documento.length < 4) { alert("Por favor ingrese un documento válido."); return; }
+            
+            const btn = document.getElementById('btn-verificar');
+            btn.innerText = "Consultando..."; btn.disabled = true;
+
+            try {
+                const response = await fetch(`http://${serverIP}:8100/pacientes/`);
+                const pacientes = await response.json();
+                const paciente = pacientes.find(p => p.numero_identificacion === documento);
+
+                if (paciente) {
+                    pacienteActualId = paciente.id;
+                    document.getElementById('saludo-paciente').innerText = `Bienvenido, ${paciente.nombre}`;
+                    mostrarPaso('2');
+                } else {
+                    document.getElementById('reg-documento').value = documento;
+                    document.getElementById('reg-nombre').value = "";
+                    document.getElementById('reg-politica').checked = false;
+                    mostrarPaso('registro');
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión al consultar base de datos.");
+            } finally {
+                btn.innerText = "Continuar"; btn.disabled = false;
+            }
+        }
+
+        // LÓGICA DE CREACIÓN DE PACIENTE
+        async function registrarPaciente() {
+            const nombre = document.getElementById('reg-nombre').value.trim();
+            const politica = document.getElementById('reg-politica').checked;
+
+            if (nombre === "") { alert("Por favor, ingrese su nombre completo."); return; }
+            if (!politica) { alert("Debe aceptar la Política de Tratamiento de Datos para continuar."); return; }
+
+            const btn = document.getElementById('btn-guardar');
+            btn.innerText = "Registrando..."; btn.disabled = true;
+
+            try {
+                const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre: nombre, numero_identificacion: documento })
+                });
+
+                if (response.ok) {
+                    const nuevoPaciente = await response.json();
+                    pacienteActualId = nuevoPaciente.id;
+                    document.getElementById('saludo-paciente').innerText = `Bienvenido, ${nuevoPaciente.nombre}`;
+                    mostrarPaso('2');
+                } else {
+                    alert("Error al registrar paciente. Intente nuevamente.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión al registrar.");
+            } finally {
+                btn.innerText = "Registrar y Continuar"; btn.disabled = false;
+            }
+        }
+
+        function seleccionarEntidad(entidad) {
+            if (entidad === 'SOAT') { mostrarPaso('3'); } 
+            else { generarTurno(entidad, entidad.charAt(0)); }
+        }
+
+        function retroceder() {
+            if (pasoActual === '3') { mostrarPaso('2'); }
+            else if (pasoActual === '2') { mostrarPaso('1'); clearDisplay(); }
+            else if (pasoActual === 'registro') { mostrarPaso('1'); clearDisplay(); }
+        }
+
+        async function generarTurno(nombreServicio, nomenclatura) {
+            try {
+                const payload = {
+                    paciente_id: pacienteActualId,
+                    servicio: nombreServicio,
+                    nomenclatura: nomenclatura,
+                    numero_turno: Math.floor(Math.random() * 100) + 1
+                };
+
+                const resTurno = await fetch(`http://${serverIP}:8100/turnos/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resTurno.ok) {
+                    const data = await resTurno.json();
+                    alert(`¡Turno generado!\n\nSu turno es: ${data.nomenclatura}${data.numero_turno}\nPor favor, tome asiento.`);
+                    mostrarPaso('1');
+                    clearDisplay();
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión al generar turno.");
+            }
+        }
+
+        // CONTROL DEL MODAL
+        function abrirModal(event) { event.preventDefault(); document.getElementById('modal-politica').style.display = 'flex'; }
+        function cerrarModal() { document.getElementById('modal-politica').style.display = 'none'; }
+    </script>
+</body>
+</html>
