@@ -5,68 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiosco - Solicitar Turno</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ecf0f1; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .kiosco-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
-        h1 { color: #2c3e50; margin-bottom: 30px; font-size: 32px; }
-        .form-group { margin-bottom: 25px; text-align: left; }
-        label { display: block; font-weight: bold; color: #34495e; margin-bottom: 10px; font-size: 18px; }
-        input[type="text"], select { width: 100%; padding: 15px; border: 2px solid #bdc3c7; border-radius: 10px; font-size: 18px; box-sizing: border-box; }
-        button { background-color: #3498db; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; font-size: 22px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
-        button:hover { background-color: #2980b9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef1f6; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; user-select: none; }
+        .header { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-size: 24px; font-weight: 900; color: #21437c; text-transform: uppercase; }
+        .logo-med { color: #8bc34a; }
+        
+        h1 { color: #21437c; margin-bottom: 20px; font-size: 28px; text-transform: uppercase; text-align: center; }
+        .kiosco-card { background: transparent; width: 100%; max-width: 450px; text-align: center; }
+        
+        /* Pantalla del documento (Paso 1) */
+        .display-box { background: #2b579a; color: white; font-size: 40px; padding: 20px; margin-bottom: 5px; min-height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 2px; }
+        
+        /* Teclado numérico */
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .key { background-color: #21437c; color: white; border: none; padding: 20px; font-size: 35px; font-weight: bold; cursor: pointer; transition: 0.1s; }
+        .key:active { background-color: #172f57; }
+        .key.action { background-color: #b0b8c4; color: white; }
+        .key.action:active { background-color: #8b96a5; }
+        
+        /* Botón Continuar */
+        .btn-continuar { background-color: #a5cc39; color: white; border: none; padding: 20px; width: 100%; font-size: 30px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-continuar:active { background-color: #8eb32c; }
+
+        /* Pantalla de Servicios (Paso 2, Oculta por defecto) */
+        #step-2 { display: none; }
+        .service-btn { background-color: #21437c; color: white; border: none; padding: 30px; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; border-radius: 10px; margin-bottom: 15px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .service-btn:active { background-color: #172f57; transform: translateY(2px); }
+        .btn-volver { background-color: #e74c3c; color: white; border: none; padding: 15px; width: 100%; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="kiosco-card">
-        <h1>Bienvenido</h1>
-        <form id="kiosco-form" onsubmit="solicitarTurno(event)">
-            <div class="form-group">
-                <label for="identificacion">Número de Identificación:</label>
-                <input type="text" id="identificacion" placeholder="Ej. 1116255806" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="servicio">Seleccione el Servicio:</label>
-                <select id="servicio" required>
-                    <option value="L">Laboratorio</option>
-                    <option value="M">Medicina General</option>
-                    <option value="F">Facturación</option>
-                </select>
-            </div>
+    <div class="header">
+        <span class="logo-text">TU<span class="logo-med">TURNERO</span></span>
+    </div>
 
-            <button type="submit">Solicitar Turno</button>
-        </form>
+    <!-- PASO 1: TECLADO NUMÉRICO -->
+    <div class="kiosco-card" id="step-1">
+        <h1>Por favor digite su documento</h1>
+        
+        <div class="display-box" id="display"></div>
+        
+        <div class="keypad">
+            <button class="key" onclick="press('1')">1</button>
+            <button class="key" onclick="press('2')">2</button>
+            <button class="key" onclick="press('3')">3</button>
+            <button class="key" onclick="press('4')">4</button>
+            <button class="key" onclick="press('5')">5</button>
+            <button class="key" onclick="press('6')">6</button>
+            <button class="key" onclick="press('7')">7</button>
+            <button class="key" onclick="press('8')">8</button>
+            <button class="key" onclick="press('9')">9</button>
+            <button class="key action" onclick="clearDisplay()">✖</button>
+            <button class="key" onclick="press('0')">0</button>
+            <button class="key action" onclick="backspace()">⮜</button>
+        </div>
+        
+        <button class="btn-continuar" onclick="irAServicios()">Continuar</button>
+    </div>
+
+    <!-- PASO 2: SELECCIÓN DE SERVICIO -->
+    <div class="kiosco-card" id="step-2">
+        <h1>Seleccione el área</h1>
+        
+        <button class="service-btn" onclick="solicitarTurno('Laboratorio', 'L')">🧪 Laboratorio</button>
+        <button class="service-btn" onclick="solicitarTurno('Medicina General', 'M')">🩺 Medicina General</button>
+        <button class="service-btn" onclick="solicitarTurno('Facturación', 'F')">💳 Facturación</button>
+        
+        <button class="btn-volver" onclick="volver()">Cancelar / Volver al inicio</button>
     </div>
 
     <script>
-        async function solicitarTurno(event) {
-            event.preventDefault();
-            
-            const btn = document.querySelector('button');
-            btn.innerText = "Procesando...";
-            btn.disabled = true;
+        let documento = "";
+        const displayEl = document.getElementById('display');
+        const serverIP = window.location.hostname;
 
-            const identificacion = document.getElementById('identificacion').value;
-            const servicioSelect = document.getElementById('servicio');
-            const nombreServicio = servicioSelect.options[servicioSelect.selectedIndex].text;
-            const nomenclatura = servicioSelect.value;
-            const serverIP = window.location.hostname;
+        function press(num) {
+            if (documento.length < 15) {
+                documento += num;
+                displayEl.innerText = documento;
+            }
+        }
 
+        function clearDisplay() {
+            documento = "";
+            displayEl.innerText = "";
+        }
+
+        function backspace() {
+            documento = documento.slice(0, -1);
+            displayEl.innerText = documento;
+        }
+
+        function irAServicios() {
+            if (documento.length < 4) {
+                alert("Por favor ingrese un documento válido.");
+                return;
+            }
+            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-2').style.display = 'block';
+        }
+
+        function volver() {
+            document.getElementById('step-2').style.display = 'none';
+            document.getElementById('step-1').style.display = 'block';
+            clearDisplay();
+        }
+
+        async function solicitarTurno(nombreServicio, nomenclatura) {
             try {
-                // 1. Validar si el paciente existe en la base de datos
                 const resPacientes = await fetch(`http://${serverIP}:8100/pacientes/`);
                 const pacientes = await resPacientes.json();
-                const paciente = pacientes.find(p => p.numero_identificacion === identificacion);
+                const paciente = pacientes.find(p => p.numero_identificacion === documento);
 
                 if (!paciente) {
-                    alert("Paciente no encontrado. Por favor, diríjase a recepción para registrar sus datos.");
-                    resetButton(btn);
+                    alert("Paciente no encontrado. Por favor, diríjase a la recepción principal.");
+                    volver();
                     return;
                 }
 
-                // 2. Generar Turno (Simulación de correlativo para esta fase)
                 const numeroAleatorio = Math.floor(Math.random() * 100) + 1;
-
                 const payload = {
                     paciente_id: paciente.id,
                     servicio: nombreServicio,
@@ -74,7 +132,6 @@
                     numero_turno: numeroAleatorio
                 };
 
-                // 3. Enviar a la API (Esto disparará el WebSocket automáticamente)
                 const resTurno = await fetch(`http://${serverIP}:8100/turnos/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -83,22 +140,15 @@
 
                 if (resTurno.ok) {
                     const data = await resTurno.json();
-                    alert(`¡Turno generado con éxito!\n\nSu turno es: ${data.nomenclatura}${data.numero_turno}\nPor favor, mire la pantalla.`);
-                    document.getElementById('kiosco-form').reset();
+                    alert(`¡Turno generado con éxito!\n\nSu turno es: ${data.nomenclatura}${data.numero_turno}\nPor favor, mire la pantalla en la sala de espera.`);
+                    volver();
                 } else {
                     alert("Ocurrió un error al generar el turno.");
                 }
             } catch (error) {
                 console.error(error);
                 alert("Error de conexión con el servidor.");
-            } finally {
-                resetButton(btn);
             }
-        }
-
-        function resetButton(btn) {
-            btn.innerText = "Solicitar Turno";
-            btn.disabled = false;
         }
     </script>
 </body>
