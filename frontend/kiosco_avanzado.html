@@ -43,6 +43,7 @@
         <button class="btn-regresar hidden" id="btn-back" onclick="retroceder()">Regresar</button>
     </div>
 
+    <!-- PASO 1: TECLADO NUMÉRICO -->
     <div id="step-1" class="step-wrapper">
         <h2>Por favor digite su documento</h2>
         <div class="display-box" id="display"></div>
@@ -63,6 +64,7 @@
         <button class="btn-continuar" id="btn-verificar" onclick="verificarPaciente()">Continuar</button>
     </div>
 
+    <!-- PASO 1B: REGISTRO DE PACIENTE NUEVO -->
     <div id="step-registro" class="step-wrapper-wide hidden">
         <h2>Registro de Nuevo Paciente</h2>
         <div class="form-container">
@@ -92,6 +94,7 @@
         </div>
     </div>
 
+    <!-- PASO 2: SELECCIÓN DE ENTIDAD PRINCIPAL -->
     <div id="step-2" class="step-wrapper-wide hidden">
         <h2>Seleccione su entidad de atención</h2>
         <h3 id="saludo-paciente"></h3>
@@ -108,6 +111,7 @@
         </div>
     </div>
 
+    <!-- PASO 3: TRÁMITES PARA SOAT -->
     <div id="step-3" class="step-wrapper-wide hidden">
         <h2>Por favor seleccione el tramite</h2>
         <div class="grid-tramites">
@@ -119,6 +123,7 @@
         </div>
     </div>
 
+    <!-- MODAL POLÍTICA DE DATOS -->
     <div id="modal-politica" class="modal-overlay">
         <div class="modal-content">
             <h2 style="text-align: center; font-size: 22px;">Autorización para el Tratamiento de Datos Personales</h2>
@@ -167,8 +172,13 @@
 
             try {
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`);
-                const pacientes = await response.json();
                 
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Servidor devolvió ${response.status}: ${errText}`);
+                }
+                
+                const pacientes = await response.json();
                 const paciente = pacientes.find(p => String(p.numero_identificacion) === String(documento));
 
                 if (paciente) {
@@ -184,7 +194,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión al consultar base de datos.");
+                alert(`Error al consultar base de datos:\n\n${error.message}`);
             } finally {
                 btn.innerText = "Continuar"; btn.disabled = false;
             }
@@ -206,7 +216,6 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // Restaurado: Se vuelve a enviar el tipo de documento al backend
                     body: JSON.stringify({ 
                         tipo_doc: tipoDoc,
                         nombre: nombre.toUpperCase(), 
@@ -220,20 +229,23 @@
                     document.getElementById('saludo-paciente').innerText = `Bienvenido(a), ${nuevoPaciente.nombre}`;
                     mostrarPaso('2');
                 } else {
-                    const errorData = await response.json();
-                    let errMsg = errorData.detail || 'Verifique los datos ingresados';
-                    
-                    if (Array.isArray(errMsg)) {
-                        errMsg = errMsg.map(e => `➤ El campo '${e.loc[e.loc.length-1]}' fue rechazado: ${e.msg}`).join('\n');
-                    } else if (typeof errMsg === 'object') {
-                        errMsg = JSON.stringify(errMsg);
+                    let errMsg;
+                    try {
+                        const errorData = await response.json();
+                        errMsg = errorData.detail || 'Verifique los datos ingresados';
+                        if (Array.isArray(errMsg)) {
+                            errMsg = errMsg.map(e => `➤ El campo '${e.loc[e.loc.length-1]}' fue rechazado: ${e.msg}`).join('\n');
+                        } else if (typeof errMsg === 'object') {
+                            errMsg = JSON.stringify(errMsg);
+                        }
+                    } catch (e) {
+                        errMsg = await response.text(); // Captura el texto si el backend devuelve un HTML o error 500
                     }
-                    
                     alert(`El servidor rechazó el registro:\n\n${errMsg}`);
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión al registrar.");
+                alert(`Error crítico de conexión al registrar:\n\n${error.message}`);
             } finally {
                 btn.innerText = "Registrar y Continuar"; btn.disabled = false;
             }
@@ -270,6 +282,9 @@
                     alert(`¡Turno generado!\n\nSu turno es: ${data.nomenclatura}${data.numero_turno}\nPor favor, tome asiento.`);
                     mostrarPaso('1');
                     clearDisplay();
+                } else {
+                    const errText = await resTurno.text();
+                    alert(`Error al generar turno: ${errText}`);
                 }
             } catch (error) {
                 console.error(error);
