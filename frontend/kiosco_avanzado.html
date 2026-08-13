@@ -214,8 +214,8 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // CORRECCIÓN: Se remueve tipo_doc para alinearse con la base de datos actual
                     body: JSON.stringify({ 
+                        tipo_doc: tipoDoc,
                         nombre: nombre.toUpperCase(), 
                         numero_identificacion: documento 
                     })

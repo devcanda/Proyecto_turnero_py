@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from database import engine, get_db, init_db
 import models, schemas
 from socket_manager import manager
@@ -8,6 +9,15 @@ from socket_manager import manager
 init_db()
 
 app = FastAPI(title="API Turnero Digital", version="1.0.0")
+
+# Hook de actualización automática de Base de Datos
+@app.on_event("startup")
+def upgrade_db():
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE pacientes ADD COLUMN tipo_doc VARCHAR(10) DEFAULT 'CC'"))
+    except Exception:
+        pass # Se ignora silenciosamente si la columna ya existe
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,7 +47,6 @@ def obtener_pacientes(db: Session = Depends(get_db)):
 # --- RUTAS DE TURNOS ---
 @app.post("/turnos/", response_model=schemas.Turno, tags=["Turnos"])
 async def crear_turno(turno: schemas.TurnoCreate, db: Session = Depends(get_db)):
-    # Guarda en BD silenciosamente (Estado por defecto: EN_ESPERA)
     nuevo_turno = models.Turno(**turno.model_dump())
     db.add(nuevo_turno)
     db.commit()
@@ -46,7 +55,6 @@ async def crear_turno(turno: schemas.TurnoCreate, db: Session = Depends(get_db))
 
 @app.get("/turnos/pendientes", response_model=list[schemas.Turno], tags=["Turnos"])
 def obtener_turnos_pendientes(db: Session = Depends(get_db)):
-    # Devuelve solo los turnos que no han sido llamados
     return db.query(models.Turno).filter(models.Turno.estado == 'EN_ESPERA').all()
 
 @app.put("/turnos/{turno_id}/llamar", response_model=schemas.Turno, tags=["Turnos"])
@@ -55,12 +63,10 @@ async def llamar_turno(turno_id: int, db: Session = Depends(get_db)):
     if not turno:
         raise HTTPException(status_code=404, detail="Turno no encontrado")
     
-    # Actualiza el estado
     turno.estado = 'LLAMADO'
     db.commit()
     db.refresh(turno)
     
-    # AHORA SÍ: Dispara el evento WebSocket a la Sala de Espera
     evento = {
         "accion": "NUEVO_TURNO",
         "datos": {
