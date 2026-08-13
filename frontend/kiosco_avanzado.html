@@ -74,7 +74,8 @@
             <input type="text" id="reg-documento" class="form-input" disabled>
 
             <label class="form-label">Nombre Completo:</label>
-            <input type="text" id="reg-nombre" class="form-input" placeholder="Ej. Juan Pérez" required>
+            <!-- Se agregó text-transform y oninput para forzar mayúsculas en tiempo real -->
+            <input type="text" id="reg-nombre" class="form-input" placeholder="EJ. JUAN PÉREZ" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
 
             <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
                 <input type="checkbox" id="reg-politica" style="width: 25px; height: 25px; margin-right: 10px; cursor: pointer;">
@@ -169,11 +170,13 @@
             try {
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`);
                 const pacientes = await response.json();
-                const paciente = pacientes.find(p => p.numero_identificacion === documento);
+                
+                // CORRECCIÓN: Forzamos que ambos sean texto para evitar problemas de tipos (Número vs String)
+                const paciente = pacientes.find(p => String(p.numero_identificacion) === String(documento));
 
                 if (paciente) {
                     pacienteActualId = paciente.id;
-                    document.getElementById('saludo-paciente').innerText = `Bienvenido, ${paciente.nombre}`;
+                    document.getElementById('saludo-paciente').innerText = `Bienvenido(a), ${paciente.nombre}`;
                     mostrarPaso('2');
                 } else {
                     document.getElementById('reg-documento').value = documento;
@@ -204,16 +207,19 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre: nombre, numero_identificacion: documento })
+                    // CORRECCIÓN: Enviamos el nombre forzado a mayúsculas al backend
+                    body: JSON.stringify({ nombre: nombre.toUpperCase(), numero_identificacion: documento })
                 });
 
                 if (response.ok) {
                     const nuevoPaciente = await response.json();
                     pacienteActualId = nuevoPaciente.id;
-                    document.getElementById('saludo-paciente').innerText = `Bienvenido, ${nuevoPaciente.nombre}`;
+                    document.getElementById('saludo-paciente').innerText = `Bienvenido(a), ${nuevoPaciente.nombre}`;
                     mostrarPaso('2');
                 } else {
-                    alert("Error al registrar paciente. Intente nuevamente.");
+                    // CORRECCIÓN: Mejor captura de error para diagnosticar problemas del backend
+                    const errorData = await response.json();
+                    alert(`Error del Servidor: ${errorData.detail || 'Verifique los datos ingresados'}`);
                 }
             } catch (error) {
                 console.error(error);
