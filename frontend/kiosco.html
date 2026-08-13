@@ -112,11 +112,21 @@
             align-items: center; 
         }
         
+        /* GRILLA PASO 2 (Dos columnas) */
         .grid-entidades { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 15px; 
             width: 100%; 
+        }
+        
+        /* GRILLA PASO 3 (Una sola columna apilada para Trámites) */
+        .grid-tramites { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+            width: 100%; 
+            max-width: 650px; /* Un poco más estrecho para que los botones no sean tan exageradamente largos */
         }
         
         .btn-entidad { 
@@ -139,7 +149,7 @@
 <body>
 
     <div class="header-top">
-        <!-- Asegúrate de subir logo.png a GitHub -->
+        <!-- Asegúrate de tener logo.png en tu repositorio -->
         <img src="logo.png" alt="Logo" style="max-height: 80px;">
         <button class="btn-regresar hidden" id="btn-back" onclick="retroceder()">Regresar</button>
     </div>
@@ -181,14 +191,15 @@
         </div>
     </div>
 
-    <!-- PASO 3: SUB-SERVICIOS PARA SOAT -->
+    <!-- PASO 3: TRÁMITES PARA SOAT -->
     <div id="step-3" class="step-wrapper-wide hidden">
-        <h2>Atención SOAT - Seleccione el servicio</h2>
-        <div class="grid-entidades">
-            <button class="btn-entidad" onclick="generarTurno('SOAT - Consulta', 'SC')">Consulta Médica</button>
-            <button class="btn-entidad" onclick="generarTurno('SOAT - Terapias', 'ST')">Fisioterapia / Terapias</button>
-            <button class="btn-entidad" onclick="generarTurno('SOAT - Revisión', 'SR')">Revisión / Control</button>
-            <button class="btn-entidad" onclick="generarTurno('SOAT - Autorizaciones', 'SA')">Autorizaciones</button>
+        <h2>Por favor seleccione el tramite</h2>
+        <div class="grid-tramites">
+            <button class="btn-entidad" onclick="generarTurno('Imágenes SOAT', 'IS')">IMÁGENES SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Laboratorio Clínico SOAT', 'LS')">LABORATORIO CLÍNICO SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Medicina del Dolor S1 SOAT', 'MS')">MEDICINA DEL DOLOR S1 SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Post Quirúrgico SOAT', 'PS')">POST QUIRÚRGICO SOAT</button>
+            <button class="btn-entidad" onclick="generarTurno('Atención Priorizada S1 SOAT', 'AS')">ATENCIÓN PRIORIZADA S1 SOAT</button>
         </div>
     </div>
 
