@@ -29,7 +29,7 @@ services:
 
   frontend:
     build: ./frontend
-    image: turnero_frontend_img:v28
+    image: turnero_frontend_img:v29
     container_name: turnero_frontend
     restart: always
     ports:

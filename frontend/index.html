@@ -8,10 +8,10 @@
         body { margin: 0; overflow: hidden; background-color: #0b3470; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; }
         
         /* CABECERA */
-        .header { display: flex; justify-content: space-between; align-items: center; height: 12vh; background-color: #fff; padding: 0 30px; border-bottom: 5px solid #8bc34a; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; height: 12vh; background-color: #fff; padding: 0 30px; border-bottom: 5px solid #92d050; box-sizing: border-box; }
         .header img { max-height: 8vh; }
-        .reloj-container { background: #0b3470; color: white; padding: 10px 40px; border-radius: 50px; display: flex; gap: 20px; align-items: center; border: 3px solid #8bc34a; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .hora { color: #8bc34a; font-size: 4vh; font-weight: 900; }
+        .reloj-container { background: #0b3470; color: white; padding: 10px 40px; border-radius: 50px; display: flex; gap: 20px; align-items: center; border: 3px solid #92d050; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .hora { color: #92d050; font-size: 4vh; font-weight: 900; }
         .fecha { font-size: 3vh; font-weight: bold; text-transform: capitalize; }
 
         /* CUERPO CENTRAL */
@@ -19,24 +19,30 @@
         
         /* ZONA DE VIDEO */
         .video-section { width: 65%; background-color: #000; position: relative; }
-        .youtube-iframe { width: 100%; height: 100%; pointer-events: none; /* Evita que el usuario pause el video al tocar la pantalla */ }
+        .youtube-iframe { width: 100%; height: 100%; pointer-events: none; }
         
         /* ZONA DE TURNOS */
-        .turnos-section { width: 35%; background-color: #0b3470; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #8bc34a; }
-        .tabla-header { display: flex; justify-content: space-between; background-color: #8bc34a; color: #0b3470; font-weight: 900; font-size: 3.5vh; padding: 15px 20px; border-radius: 10px; margin-bottom: 15px; text-transform: uppercase; }
-        .lista-turnos { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        .turnos-section { width: 35%; background-color: #0b3470; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #92d050; }
         
-        .turno-item { display: flex; justify-content: space-between; font-size: 4.5vh; font-weight: bold; padding: 20px; border-bottom: 2px solid rgba(139, 195, 74, 0.3); transition: all 0.5s ease; }
-        .turno-item.nuevo { animation: resplandor 2s infinite; background-color: rgba(139, 195, 74, 0.2); border-radius: 10px; border-bottom: none; }
-        .turno-col { color: white; width: 50%; }
-        .mod-col { color: #8bc34a; width: 50%; text-align: right; }
+        /* ENCABEZADOS ESTILO "PILL" */
+        .tabla-header { display: flex; justify-content: space-between; margin-bottom: 25px; }
+        .header-pill { background-color: #92d050; color: white; width: 45%; text-align: center; font-size: 4vh; font-weight: 900; padding: 10px 0; border-radius: 15px; border: 3px solid #7cb342; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        
+        .lista-turnos { flex: 1; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        
+        /* FILAS DE TURNOS CENTRADAS */
+        .turno-item { display: flex; justify-content: space-between; font-size: 5vh; font-weight: bold; transition: all 0.5s ease; }
+        .turno-item.nuevo .turno-col, .turno-item.nuevo .mod-col { animation: parpadeoNuevo 1.5s infinite alternate; color: #92d050; border-color: #fff; }
+        
+        .turno-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 8px; }
+        .mod-col { width: 45%; text-align: center; color: white; border-bottom: 3px solid #92d050; padding-bottom: 8px; text-transform: uppercase; }
 
         /* PIE DE PÁGINA (MARQUESINA) */
-        .footer { height: 8vh; background-color: #fff; color: #0b3470; display: flex; align-items: center; font-size: 3.5vh; font-weight: 900; overflow: hidden; white-space: nowrap; box-sizing: border-box; border-top: 5px solid #8bc34a; }
+        .footer { height: 8vh; background-color: #fff; color: #0b3470; display: flex; align-items: center; font-size: 3.5vh; font-weight: 900; overflow: hidden; white-space: nowrap; box-sizing: border-box; border-top: 5px solid #92d050; }
         .marquee { display: inline-block; padding-left: 100%; animation: scroll 25s linear infinite; }
 
         @keyframes scroll { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-        @keyframes resplandor { 0% { box-shadow: 0 0 5px #8bc34a; } 50% { box-shadow: 0 0 25px #8bc34a, inset 0 0 15px #8bc34a; } 100% { box-shadow: 0 0 5px #8bc34a; } }
+        @keyframes parpadeoNuevo { 0% { text-shadow: 0 0 10px #92d050; } 100% { text-shadow: 0 0 30px #92d050, 0 0 10px #fff; } }
     </style>
 </head>
 <body>
@@ -50,9 +56,7 @@
     </div>
 
     <div class="main-content">
-        <!-- ZONA DE VIDEO DE YOUTUBE -->
         <div class="video-section">
-            <!-- Parámetros: mute=1 (obligatorio para autoplay), autoplay=1, controls=0, loop=1 y playlist igual al ID del video para que repita -->
             <iframe class="youtube-iframe" 
                 src="https://www.youtube.com/embed/qZcLuGXM6H4?autoplay=1&mute=1&controls=0&loop=1&playlist=qZcLuGXM6H4&modestbranding=1&showinfo=0" 
                 frameborder="0" 
@@ -63,11 +67,11 @@
 
         <div class="turnos-section">
             <div class="tabla-header">
-                <span>TURNO</span>
-                <span>MÓDULO</span>
+                <div class="header-pill">TURNO</div>
+                <div class="header-pill">MÓD</div>
             </div>
             <div class="lista-turnos" id="contenedor-turnos">
-                <!-- Los turnos se inyectarán aquí vía WebSocket y API -->
+                <!-- Inyección dinámica de turnos -->
             </div>
         </div>
     </div>
@@ -83,7 +87,6 @@
         const MAX_TURNOS = 5;
         let turnosMostrados = [];
 
-        // --- RELOJ Y FECHA ---
         function actualizarReloj() {
             const ahora = new Date();
             let horas = ahora.getHours();
@@ -93,24 +96,20 @@
             minutos = minutos < 10 ? '0' + minutos : minutos;
             
             document.getElementById('reloj-hora').innerText = `${horas}:${minutos}`;
-            
             const opcionesFecha = { day: 'numeric', month: 'long' };
             document.getElementById('reloj-fecha').innerText = ahora.toLocaleDateString('es-ES', opcionesFecha);
         }
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
 
-        // --- CARGA INICIAL DE HISTORIAL ---
         async function cargarHistorial() {
             try {
                 const response = await fetch(`http://${serverIP}:8100/turnos/llamados`);
                 if(response.ok) {
                     const turnos = await response.json();
-                    // Vienen en orden descendente. Los invertimos para que el más nuevo quede arriba al insertarlos.
                     turnos.reverse().forEach(turno => {
                         const turnoStr = `${turno.nomenclatura}${turno.numero_turno}`;
-                        // Pasamos "false" para que no suene la voz ni titile al cargar el historial
-                        agregarTurnoAPantalla(turnoStr, "CAJA 1", false);
+                        agregarTurnoAPantalla(turnoStr, "CAJA_1", false);
                     });
                 }
             } catch (error) {
@@ -118,7 +117,6 @@
             }
         }
 
-        // --- LÓGICA DE TURNOS Y WEBSOCKET CON AUTO-RECONEXIÓN ---
         function conectarWebSocket() {
             const ws = new WebSocket(`ws://${serverIP}:8100/ws/pantalla`);
             
@@ -126,18 +124,12 @@
                 const mensaje = JSON.parse(event.data);
                 if (mensaje.accion === "NUEVO_TURNO") {
                     const turnoStr = `${mensaje.datos.nomenclatura}${mensaje.datos.numero}`;
-                    agregarTurnoAPantalla(turnoStr, "CAJA 1", true);
+                    agregarTurnoAPantalla(turnoStr, "CAJA_1", true);
                 }
             };
 
             ws.onclose = function(e) {
-                console.log('WebSocket desconectado. Intentando reconectar en 3 segundos...');
                 setTimeout(conectarWebSocket, 3000);
-            };
-
-            ws.onerror = function(err) {
-                console.error('Error de WebSocket:', err);
-                ws.close();
             };
         }
 
@@ -154,8 +146,8 @@
             if(esNuevo) div.classList.add('nuevo');
             
             div.innerHTML = `
-                <span class="turno-col">${turno}</span>
-                <span class="mod-col">${modulo}</span>
+                <div class="turno-col">${turno}</div>
+                <div class="mod-col">${modulo}</div>
             `;
             
             contenedor.insertBefore(div, contenedor.firstChild);
@@ -171,24 +163,20 @@
             }
         }
 
-        // --- SÍNTESIS DE VOZ (TTS) ---
         function llamarPorVoz(turno, modulo) {
             try {
                 if ('speechSynthesis' in window) {
                     const turnoHablado = turno.replace(/([a-zA-Z])(\d)/g, '$1 $2');
-                    const texto = `Turno ${turnoHablado}, dirigirse a ${modulo}`;
+                    const texto = `Turno ${turnoHablado}, dirigirse a ${modulo.replace('_', ' ')}`;
                     
                     const utterance = new SpeechSynthesisUtterance(texto);
                     utterance.lang = 'es-ES';
                     utterance.rate = 0.85; 
                     window.speechSynthesis.speak(utterance);
                 }
-            } catch (e) {
-                console.error("Audio bloqueado por el navegador", e);
-            }
+            } catch (e) {}
         }
 
-        // Arrancar
         cargarHistorial();
         conectarWebSocket();
     </script>
