@@ -74,7 +74,6 @@
             <input type="text" id="reg-documento" class="form-input" disabled>
 
             <label class="form-label">Nombre Completo:</label>
-            <!-- Se agregó text-transform y oninput para forzar mayúsculas en tiempo real -->
             <input type="text" id="reg-nombre" class="form-input" placeholder="EJ. JUAN PÉREZ" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
 
             <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
@@ -160,7 +159,6 @@
             pasoActual = paso;
         }
 
-        // LÓGICA DE VALIDACIÓN DE PACIENTE
         async function verificarPaciente() {
             if (documento.length < 4) { alert("Por favor ingrese un documento válido."); return; }
             
@@ -171,7 +169,6 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`);
                 const pacientes = await response.json();
                 
-                // CORRECCIÓN: Forzamos que ambos sean texto para evitar problemas de tipos (Número vs String)
                 const paciente = pacientes.find(p => String(p.numero_identificacion) === String(documento));
 
                 if (paciente) {
@@ -192,7 +189,6 @@
             }
         }
 
-        // LÓGICA DE CREACIÓN DE PACIENTE
         async function registrarPaciente() {
             const nombre = document.getElementById('reg-nombre').value.trim();
             const politica = document.getElementById('reg-politica').checked;
@@ -207,7 +203,6 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // CORRECCIÓN: Enviamos el nombre forzado a mayúsculas al backend
                     body: JSON.stringify({ nombre: nombre.toUpperCase(), numero_identificacion: documento })
                 });
 
@@ -217,9 +212,17 @@
                     document.getElementById('saludo-paciente').innerText = `Bienvenido(a), ${nuevoPaciente.nombre}`;
                     mostrarPaso('2');
                 } else {
-                    // CORRECCIÓN: Mejor captura de error para diagnosticar problemas del backend
                     const errorData = await response.json();
-                    alert(`Error del Servidor: ${errorData.detail || 'Verifique los datos ingresados'}`);
+                    let errMsg = errorData.detail || 'Verifique los datos ingresados';
+                    
+                    // Aquí desempaquetamos el error de Pydantic
+                    if (Array.isArray(errMsg)) {
+                        errMsg = errMsg.map(e => `➤ El campo '${e.loc[e.loc.length-1]}' fue rechazado: ${e.msg}`).join('\n');
+                    } else if (typeof errMsg === 'object') {
+                        errMsg = JSON.stringify(errMsg);
+                    }
+                    
+                    alert(`El servidor rechazó el registro por el siguiente motivo:\n\n${errMsg}\n\nPor favor, envíame una captura de este nuevo mensaje para corregir el esquema.`);
                 }
             } catch (error) {
                 console.error(error);
@@ -267,7 +270,6 @@
             }
         }
 
-        // CONTROL DEL MODAL
         function abrirModal(event) { event.preventDefault(); document.getElementById('modal-politica').style.display = 'flex'; }
         function cerrarModal() { document.getElementById('modal-politica').style.display = 'none'; }
     </script>
