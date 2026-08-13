@@ -70,7 +70,6 @@
     <div id="step-registro" class="step-wrapper-wide hidden">
         <h2>Registro de Nuevo Paciente</h2>
         <div class="form-container">
-            <!-- Nuevo Campo: Tipo de Documento -->
             <label class="form-label">Tipo de Documento:</label>
             <select id="reg-tipo-doc" class="form-input" required>
                 <option value="" disabled selected>Seleccione una opción...</option>
@@ -215,8 +214,8 @@
                 const response = await fetch(`http://${serverIP}:8100/pacientes/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    // CORRECCIÓN: Se remueve tipo_doc para alinearse con la base de datos actual
                     body: JSON.stringify({ 
-                        tipo_doc: tipoDoc,
                         nombre: nombre.toUpperCase(), 
                         numero_identificacion: documento 
                     })
@@ -237,7 +236,7 @@
                         errMsg = JSON.stringify(errMsg);
                     }
                     
-                    alert(`El servidor rechazó el registro por el siguiente motivo:\n\n${errMsg}\n\nPor favor, envíame una captura de este nuevo mensaje para corregir el esquema.`);
+                    alert(`El servidor rechazó el registro:\n\n${errMsg}`);
                 }
             } catch (error) {
                 console.error(error);
